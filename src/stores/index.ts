@@ -17,7 +17,6 @@ export const useStore = defineStore('store', () => {
     isOpen: '',
     fonts: api.getFonts() as string[],
   })
-
   const getElement = computed(() => (id: string) => {
     return state.selectedPageElements[id]
   })
@@ -72,7 +71,9 @@ export const useStore = defineStore('store', () => {
     state.selected = ''
     state.selectedElement = {}
   }
-
+  function addFont(fontName: string) {
+    state.fonts.push(fontName)
+  }
   function updateProperties(payload: Partial<Element>) {
     state.selectedElement = Object.assign(state.selectedElement, payload)
   }
@@ -189,7 +190,8 @@ export const useStore = defineStore('store', () => {
     onPositionChange,
     setEditable,
     updateHtmlText,
-    setFormatEvent,
     clearPage,
+    addFont,
+    setFormatEvent,
   }
 })
