@@ -22,15 +22,15 @@ Features:
 
 More Feature Coming...
 
-1. Saving to Google Drive
+1. Saving to Google Drive or saving to IndexedDB instead of localstorage
 2. Bring Forward and Send Backward Text and Images
 3. Add embedded videos links
 4. Add tables
    and more....
 
-Build with Vue.js 2, Vuex
+Build with Vue.js 3, Pinia, Typescript, GoogleFonts
 
-Demo: [https://jayeshlab.github.io/vue-page-note/](https://jayeshlab.github.io/vue-page-note/)
+Demo: [https://vue3-page-note.vercel.app/](https://vue3-page-note.vercel.app/)
 
 ## Project setup
 
