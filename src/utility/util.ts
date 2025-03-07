@@ -31,17 +31,16 @@ const createDefaultPage = (prop: Partial<Page>): Page => {
 
   return Object.assign(defaultPage, prop)
 }
-const debounce = (func: (...args: unknown[]) => void, wait: number, immediate: boolean) => {
-  let timeout: number | null
-  return function (context: unknown, ...args: unknown[]) {
-    const later = function () {
-      timeout = null
-      if (!immediate) func.apply(context, args)
-    }
-    const callNow = immediate && !timeout
-    if (timeout) clearTimeout(timeout)
-    timeout = setTimeout(later, wait)
-    if (callNow) func.apply(context, args)
+function debounce<Params extends unknown[]>(
+  func: (...args: Params) => unknown,
+  timeout: number,
+): (...args: Params) => void {
+  let timer: number | null
+  return (...args: Params) => {
+    if (timer) clearTimeout(timer)
+    timer = setTimeout(() => {
+      func(...args)
+    }, timeout)
   }
 }
 function throttle<T extends (...args: unknown[]) => unknown>(

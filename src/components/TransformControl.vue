@@ -77,9 +77,10 @@ const controlStyle = computed(() => {
     width: `${element.value.width}px`,
     height: `${element.value.height}px`,
     transform: `rotate(${element.value.rot}deg)`,
+    ...(element.value.id === selected.value && { outline: `1px solid blue` }),
   }
 })
-const isText = computed(() => element.value.type === 'text')
+const isText = computed(() => element.value.type === 'TextElement')
 const selected = computed(() => store.state.selected)
 
 const mousemoveHandle = (e: MouseEvent) => {

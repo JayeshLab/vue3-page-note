@@ -1,6 +1,6 @@
 # Vue 3 Page Note
 
-A single page note taking application with rich text box with resize, rotate and move feature to take notes. User can copy and paste their notes on page and edit/format the notes on the page and save it locally.
+A single page note taking application with rich text box with resize, rotate and move feature to take notes. User can copy and paste their notes on page and edit/format the notes on the page and save it locally in browser's IndexedDB.
 
 ![vue3-page-note](https://user-images.githubusercontent.com/36194663/206169878-19c08003-f233-4bc6-b5a4-a2eca6092ee7.PNG)
 
@@ -22,13 +22,13 @@ Features:
 
 More Feature Coming...
 
-1. Saving to Google Drive or saving to IndexedDB instead of localstorage
+1. Saving to Google Drive or sync to cloud indexeddb
 2. Bring Forward and Send Backward Text and Images
 3. Add embedded videos links
 4. Add tables
    and more....
 
-Build with Vue.js 3, Pinia, Typescript, GoogleFonts
+Build with Vue.js 3, Pinia, Typescript, GoogleFonts, localforage
 
 Demo: [https://vue3-page-note.vercel.app/](https://vue3-page-note.vercel.app/)
 

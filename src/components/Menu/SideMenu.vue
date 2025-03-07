@@ -27,9 +27,9 @@
           v-for="page in pages"
           :key="page.pid"
           @click="selectPage(page.pid)"
-          :class="{ active: currentPage.pid == page.pid }"
+          :class="{ active: currentPage ? currentPage.pid == page.pid : false }"
         >
-          <editable-title :page="page" :pid="currentPage.pid"></editable-title>
+          <EditableTitle :page="page" :pid="page.pid"></EditableTitle>
         </li>
       </ul>
     </div>

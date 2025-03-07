@@ -2,57 +2,69 @@ const PAGES_KEY = 'vpn-pages'
 const CURRENT_PAGE_ID = 'vpn-cpi'
 
 import type { Page } from '@/types'
+import localForage from 'localforage'
 import { createDefaultPage, debounce } from './util'
+localForage.config({
+  driver: localForage.INDEXEDDB,
+  name: 'vpn',
+})
 const api = {
-  loadPages: () => {
-    const pageIds = JSON.parse(localStorage.getItem(PAGES_KEY) ?? '[]') || []
-    const currentPageId: string = localStorage.getItem(CURRENT_PAGE_ID) ?? '0'
+  loadPages: async () => {
+    console.log('loadPages')
+    const pageIds = JSON.parse((await localForage.getItem(PAGES_KEY)) ?? '[]') || []
+    const currentPageId: string = (await localForage.getItem(CURRENT_PAGE_ID)) ?? '0'
     let currentPage = null
     const pages = []
     if (pageIds.length > 0) {
-      pageIds.forEach((id: string) => {
-        const page = JSON.parse(localStorage.getItem(id) ?? '{}')
-        pages.push(page)
-        if (id === currentPageId) {
-          currentPage = page
+      for (const pageId of pageIds) {
+        const page = (await localForage.getItem(pageId)) as string
+        const pg: Page = page ? JSON.parse(page) : {}
+        pages.push(pg)
+        if (pageId === currentPageId) {
+          currentPage = pg
         }
-      })
+      }
     } else {
-      const pg = createDefaultPage({})
+      const pg: Page = createDefaultPage({})
       const newPid = pg.pid
       pageIds.push(newPid)
-      localStorage.setItem(PAGES_KEY, JSON.stringify(pageIds))
-      localStorage.setItem(CURRENT_PAGE_ID, newPid)
-      localStorage.setItem(newPid, JSON.stringify(pg))
+      await localForage.setItem(PAGES_KEY, JSON.stringify(pageIds))
+      await localForage.setItem(CURRENT_PAGE_ID, newPid)
+      await localForage.setItem(newPid, JSON.stringify(pg))
       pages.push(pg)
       currentPage = pg
     }
     return { pages, currentPage }
   },
-  createNewPage: () => {
-    const pageIds = JSON.parse(localStorage.getItem(PAGES_KEY) ?? '[]') || []
+
+  createNewPage: async () => {
+    const pageIds = JSON.parse((await localForage.getItem(PAGES_KEY)) ?? '[]') || []
     const page: Page = createDefaultPage({})
     const newPid = page.pid
     pageIds.push(newPid)
-    localStorage.setItem(PAGES_KEY, JSON.stringify(pageIds))
-    localStorage.setItem(CURRENT_PAGE_ID, newPid)
-    localStorage.setItem(newPid, JSON.stringify(page))
+    await localForage.setItem(PAGES_KEY, JSON.stringify(pageIds))
+    await localForage.setItem(CURRENT_PAGE_ID, newPid)
+    await localForage.setItem(newPid, JSON.stringify(page))
     return page
   },
-  setCurrentPageId: (pageId: string) => {
-    localStorage.setItem(CURRENT_PAGE_ID, pageId)
+
+  setCurrentPageId: async (pageId: string) => {
+    await localForage.setItem(CURRENT_PAGE_ID, pageId)
   },
-  setPage: (page: Page) => {
-    localStorage.setItem(page.pid, JSON.stringify(page))
+
+  setPage: async (page: Page) => {
+    await localForage.setItem(page.pid, JSON.stringify(page))
   },
-  saveFonts: (fonts: string[]) => {
-    localStorage.setItem('gfonts', JSON.stringify(fonts))
+
+  saveFonts: async (fonts: string[]) => {
+    await localForage.setItem('gfonts', JSON.stringify(fonts))
   },
-  getFonts: () => {
-    const localFonts = localStorage.getItem('gfonts') || '[]'
+
+  getFonts: async () => {
+    const localFonts = (await localForage.getItem('gfonts')) || '[]'
     const fonts =
       localFonts && localFonts !== '[]'
-        ? JSON.parse(localFonts)
+        ? JSON.parse(localFonts.toString())
         : [
             'Aladin',
             'Kumar One Outline',
@@ -63,15 +75,11 @@ const api = {
             'Poppins',
             'Kaushan Script',
           ]
-    console.log('fonts', fonts)
     return fonts
   },
-  savePage: debounce(
-    (page: unknown) => {
-      api.setPage(page as Page)
-    },
-    3000,
-    false,
-  ),
+
+  savePage: debounce(async (page: Page) => {
+    await api.setPage(page as Page)
+  }, 3000),
 }
 export default api

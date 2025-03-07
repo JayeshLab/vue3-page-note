@@ -8,14 +8,14 @@ import type { Element, EmptyObject, Page, PageElements } from '@/types'
 export const useStore = defineStore('store', () => {
   const state = reactive({
     pages: [] as Page[],
-    currentPage: {} as Page,
+    currentPage: {} as Page | null,
     selectedPageElements: {} as PageElements,
     selectedElement: {} as Element | EmptyObject,
     selected: '',
     editable: '',
     formatEvent: ['color', '#000000'] as [string, string],
     isOpen: '',
-    fonts: api.getFonts() as string[],
+    fonts: [] as string[],
   })
   const getElement = computed(() => (id: string) => {
     return state.selectedPageElements[id]
@@ -23,8 +23,13 @@ export const useStore = defineStore('store', () => {
   const getOpenState = computed(() => (id: string) => {
     return state.isOpen === id
   })
-  function initializeStore() {
-    const { pages, currentPage } = api.loadPages()
+
+  async function initializeStore() {
+    const { pages, currentPage } = await api.loadPages()
+    const fonts = await api.getFonts()
+    if (fonts) {
+      state.fonts = fonts
+    }
     if (currentPage) {
       state.currentPage = currentPage
       state.selectedPageElements = currentPage.elements
@@ -35,16 +40,16 @@ export const useStore = defineStore('store', () => {
     state.selected = ''
     state.editable = ''
   }
-  function addNewPage() {
+  async function addNewPage() {
     unSelectElement()
-    const page = api.createNewPage()
+    const page = await api.createNewPage()
     state.currentPage = page
     state.selectedPageElements = state.pages[0].elements
     state.pages.push(page)
   }
-  function selectPage(payload: string) {
+  async function selectPage(payload: string) {
     unSelectElement()
-    api.setCurrentPageId(payload)
+    await api.setCurrentPageId(payload)
     const page = state.pages.find((page) => page.pid === payload)
     if (page) {
       state.currentPage = page
@@ -104,13 +109,15 @@ export const useStore = defineStore('store', () => {
   function setFormatEvent(payload: [string, string]) {
     state.formatEvent = payload
   }
-  function clearPage() {
+  async function clearPage() {
     for (const ele in state.selectedPageElements) {
       delete state.selectedPageElements[ele]
     }
-    api.setPage(state.currentPage)
+    if (state.currentPage) {
+      await api.setPage(state.currentPage)
+    }
   }
-  function deletePage(payload: string) {
+  async function deletePage(payload: string) {
     unSelectElement()
     const pgs = state.pages.filter((page) => page.pid !== payload)
     if (pgs.length > 0) {
@@ -118,14 +125,16 @@ export const useStore = defineStore('store', () => {
       state.selectedPageElements = pgs[0].elements
       state.pages = pgs
     } else {
-      const pg = api.createNewPage()
+      const pg = await api.createNewPage()
       state.currentPage = pg
       state.selectedPageElements = pg.elements
       state.pages.push(pg)
     }
   }
   function updatePageTitle(payload: string) {
-    state.currentPage.title = payload
+    if (state.currentPage) {
+      state.currentPage.title = payload
+    }
   }
   function addTextElement(type: string) {
     const id = `EL_${uid(32)}`
@@ -167,7 +176,9 @@ export const useStore = defineStore('store', () => {
     state.isOpen = payload[1] ? payload[0] : ''
   }
   function onPositionChange() {
-    api.savePage(state.currentPage)
+    if (state.currentPage) {
+      api.savePage(state.currentPage as Page)
+    }
   }
   return {
     state,

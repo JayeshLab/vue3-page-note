@@ -12,8 +12,8 @@ const store = useStore()
 const onFontLoaded = () => {
   console.log('Fonts loaded')
 }
-onMounted(() => {
-  store.initializeStore()
+onMounted(async () => {
+  await store.initializeStore()
   WebFontLoader.load({
     google: {
       families: store.state.fonts,

@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@types/webfontloader": "^1.6.38",
+    "localforage": "^1.10.0",
     "pinia": "^2.3.1",
     "vue": "^3.5.13",
     "webfontloader": "^1.6.28"
@@ -35,11 +36,11 @@
     "npm-run-all2": "^7.0.2",
     "oxlint": "^0.15.6",
     "prettier": "^3.4.2",
+    "sass": "^1.83.1",
     "typescript": "~5.7.3",
     "vite": "^6.0.11",
     "vite-plugin-vue-devtools": "^7.7.0",
-    "vue-tsc": "^2.2.0",
-    "sass": "^1.83.1"
+    "vue-tsc": "^2.2.0"
   },
   "bugs": {
     "url": "https://github.com/JayeshLab/vue3-page-note/issues"

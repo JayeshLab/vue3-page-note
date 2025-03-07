@@ -1,6 +1,6 @@
 <template>
   <div class="d-flex">
-    <div class="page-title" v-if="!isEdit">
+    <div class="page-title" v-if="!isEdit" @dblclick="editTitle">
       {{ page.title }}
       <div class="title-btn edit-title" @click="editTitle"></div>
     </div>
