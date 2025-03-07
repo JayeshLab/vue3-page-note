@@ -10,7 +10,6 @@ localForage.config({
 })
 const api = {
   loadPages: async () => {
-    console.log('loadPages')
     const pageIds = JSON.parse((await localForage.getItem(PAGES_KEY)) ?? '[]') || []
     const currentPageId: string = (await localForage.getItem(CURRENT_PAGE_ID)) ?? '0'
     let currentPage = null

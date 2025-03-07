@@ -13,7 +13,7 @@ Features:
 5. Emoji Picker
 6. Text Foreground & Background color
 7. Create Pages
-8. Save locally in browser localstorage
+8. Save locally in browser IndexedDB
 9. Text Format
 10. Text Align
 11. Resize, Rotate and Move both Text and Image

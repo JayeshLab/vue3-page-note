@@ -17,18 +17,6 @@ const autoSaveFont = ['addFont', 'delFont']
 
 const app = createApp(App)
 const pinia = createPinia()
-pinia.use(({ store }) => {
-  store.$subscribe((mutation, state) => {
-    const storeEvent: DebuggerEvent = Array.isArray(mutation.events)
-      ? mutation.events[0]
-      : mutation.events
-    if (autoSaveActions.includes(storeEvent.key)) {
-      api.savePage(state.currentPage)
-    } else if (autoSaveFont.includes(storeEvent.key)) {
-      api.saveFonts(state.fonts)
-    }
-  })
-})
 app.use(pinia)
 app.component('ImageElement', Image)
 app.component('TextElement', Text)
