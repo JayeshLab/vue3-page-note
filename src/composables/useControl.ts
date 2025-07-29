@@ -4,7 +4,6 @@ import { useStore } from '@/stores'
 export function useControl(eid: string) {
   const store = useStore()
   const cdata = reactive({
-    isMove: false,
     mX: 0,
     mY: 0,
     eX: 0,
@@ -36,11 +35,11 @@ export function useControl(eid: string) {
   })
 
   const mousemoveHandle = (e: MouseEvent) => {
-    cdata.isMove = true
     e.stopPropagation()
     e.preventDefault()
     const dx = e.pageX - cdata.mX
     const dy = e.pageY - cdata.mY
+    console.log('mousemove', dx, dy)
     store.moveElement({ x: cdata.eX + dx, y: cdata.eY + dy })
   }
   const parentTagActive = (elem: HTMLElement | null): boolean => {
@@ -53,12 +52,13 @@ export function useControl(eid: string) {
       parentTagActive(selection.anchorNode.parentNode?.parentElement)
     }
 
-    document.removeEventListener('mouseup', selectionHandle, true)
+    window.removeEventListener('mouseup', selectionHandle, true)
   }
   const mouseupHandle = () => {
     store.onPositionChange()
-    document.removeEventListener('mousemove', mousemoveHandle, true)
-    document.removeEventListener('mouseup', mouseupHandle, true)
+    console.log('MouseUP')
+    window.removeEventListener('mousemove', mousemoveHandle, true)
+    window.removeEventListener('mouseup', mouseupHandle, true)
   }
   const getSelectedText = () => {
     const selectedText = window.getSelection()
@@ -71,17 +71,18 @@ export function useControl(eid: string) {
     return ''
   }
   const mousedownHandle = (e: MouseEvent) => {
-    if (editable.value != item.id) {
+    if (selected.value != item.id) {
       const el = e.currentTarget as HTMLElement
       cdata.mX = e.pageX
       cdata.mY = e.pageY
       cdata.eX = item.x
       cdata.eY = item.y
       store.selectElement({ id: item.id, h: el.clientHeight, w: el.clientWidth })
-      document.addEventListener('mousemove', mousemoveHandle, true)
-      document.addEventListener('mouseup', mouseupHandle, true)
+      console.log('mousedown')
+      window.addEventListener('mousemove', mousemoveHandle, true)
+      window.addEventListener('mouseup', mouseupHandle, true)
     } else {
-      document.addEventListener('mouseup', selectionHandle, true)
+      window.addEventListener('mouseup', selectionHandle, true)
     }
   }
   return {

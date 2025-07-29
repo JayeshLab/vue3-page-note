@@ -2,13 +2,14 @@ import { reactive, computed, watch } from 'vue'
 import { defineStore } from 'pinia'
 import api from '../utility/api'
 import uid from '../utility/uid'
-import { createDefaultElement } from '../utility/util'
+import { createDefaultElement, getLayerList } from '../utility/util'
 import type { Element, EmptyObject, Page, PageElements } from '@/types'
 
 export const useStore = defineStore('store', () => {
   const state = reactive({
     pages: [] as Page[],
     currentPage: {} as Page | null,
+    layers: [] as string[],
     selectedPageElements: {} as PageElements,
     selectedElement: {} as Element | EmptyObject,
     selected: '',
@@ -16,6 +17,7 @@ export const useStore = defineStore('store', () => {
     formatEvent: ['color', '#000000'] as [string, string],
     isOpen: '',
     fonts: [] as string[],
+    titleEdit: '',
   })
   const getElement = computed(() => (id: string) => {
     return state.selectedPageElements[id]
@@ -25,7 +27,7 @@ export const useStore = defineStore('store', () => {
   })
 
   async function initializeStore() {
-    const { pages, currentPage } = await api.loadPages()
+    const { pages, currentPage, layers } = await api.loadPages()
     const newState = {}
     const fonts = await api.getFonts()
     if (fonts) {
@@ -35,13 +37,14 @@ export const useStore = defineStore('store', () => {
       Object.assign(newState, {
         currentPage: currentPage,
         selectedPageElements: currentPage.elements,
+        layers: layers,
       })
     }
     Object.assign(newState, { pages: pages })
     Object.assign(state, newState)
   }
   function unSelectElement() {
-    return { selected: '', editable: '' }
+    return { selected: '', editable: '', selectedElement: {} }
   }
   function selectElement(payload: { id: string; h: number; w: number }) {
     const element = Object.assign(state.selectedPageElements[payload.id], {
@@ -57,12 +60,13 @@ export const useStore = defineStore('store', () => {
   }
   function addTextElement(type: string) {
     const id = `EL_${uid(32)}`
-    const size = Object.keys(state.selectedPageElements).length
+    const size = Object.keys(state.layers).length
     const element = createDefaultElement({
       id: id,
       type: type,
       z: size + 1,
     })
+    state.layers.push(element.id)
     state.selectedPageElements[id] = element
   }
   function addImageElement(payload: { image: string; height: number; width: number }) {
@@ -91,6 +95,7 @@ export const useStore = defineStore('store', () => {
         ...unSelectElement(),
         currentPage: page,
         selectedPageElements: page.elements,
+        layers: getLayerList(page.elements),
       })
     }
   }
@@ -102,7 +107,7 @@ export const useStore = defineStore('store', () => {
     Object.assign(state, {
       ...unSelectElement(),
       currentPage: page,
-      selectedPageElements: state.pages[0].elements,
+      selectedPageElements: page.elements,
       pages: pages,
     })
     await selectPage(page.pid)
@@ -117,12 +122,14 @@ export const useStore = defineStore('store', () => {
   }
   async function deletePage(payload: string) {
     const newState = {}
+    // Filter other pages
     const pgs = state.pages.filter((page) => page.pid !== payload)
     if (pgs.length > 0) {
       Object.assign(newState, {
         currentPage: pgs[0],
         selectedPageElements: pgs[0].elements,
         pages: pgs,
+        layers: getLayerList(pgs[0].elements),
         ...unSelectElement(),
       })
     } else {
@@ -133,16 +140,18 @@ export const useStore = defineStore('store', () => {
         currentPage: pg,
         selectedPageElements: pg.elements,
         pages: pages,
+        layers: getLayerList(pg.elements),
         ...unSelectElement(),
       })
     }
+    await api.deletePage(payload)
     Object.assign(state, newState)
     if (state.currentPage) {
       api.savePage(state.currentPage)
     }
   }
   function pageSelected() {
-    Object.assign(state, { editable: '', selected: '', selectedElement: {} })
+    Object.assign(state, unSelectElement())
   }
   function addFont(fontName: string) {
     state.fonts.push(fontName)
@@ -153,7 +162,63 @@ export const useStore = defineStore('store', () => {
       state.fonts.splice(index, 1)
     }
   }
-
+  function updateLayer(action: string) {
+    if (state.selectedElement) {
+      const elemId = state.selectedElement.id
+      const currentIdx = state.layers.indexOf(elemId)
+      const currentZ = state.selectedElement.z
+      const maxIndex = state.layers.length - 1
+      switch (action) {
+        case 'bringforward':
+          if (currentIdx !== maxIndex) {
+            const swapElId = state.layers[currentIdx + 1]
+            const swapEl = state.currentPage?.elements[swapElId]
+            if (swapEl) {
+              const swapZ = swapEl?.z
+              swapEl.z = currentZ
+              state.selectedElement.z = swapZ
+            }
+          }
+          break
+        case 'sendbackward':
+          if (currentIdx !== 0) {
+            const swapElId = state.layers[currentIdx - 1]
+            const swapEl = state.currentPage?.elements[swapElId]
+            if (swapEl) {
+              const swapZ = swapEl?.z
+              swapEl.z = currentZ
+              state.selectedElement.z = swapZ
+            }
+          }
+          break
+        case 'bringfront':
+          if (currentIdx !== maxIndex) {
+            const swapElId = state.layers[maxIndex]
+            const swapEl = state.currentPage?.elements[swapElId]
+            if (swapEl) {
+              const swapZ = swapEl?.z
+              swapEl.z = currentZ
+              state.selectedElement.z = swapZ
+            }
+          }
+          break
+        case 'sendback':
+          if (currentIdx !== 0) {
+            const swapElId = state.layers[0]
+            const swapEl = state.currentPage?.elements[swapElId]
+            if (swapEl) {
+              const swapZ = swapEl?.z
+              swapEl.z = currentZ
+              state.selectedElement.z = swapZ
+            }
+          }
+          break
+      }
+      if (state.currentPage) {
+        state.layers = getLayerList(state.currentPage.elements)
+      }
+    }
+  }
   function updateProperties(payload: Partial<Element>) {
     state.selectedElement = Object.assign(state.selectedElement, payload)
   }
@@ -242,5 +307,6 @@ export const useStore = defineStore('store', () => {
     clearPage,
     addFont,
     setFormatEvent,
+    updateLayer,
   }
 })

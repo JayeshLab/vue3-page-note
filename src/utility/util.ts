@@ -31,6 +31,11 @@ const createDefaultPage = (prop: Partial<Page>): Page => {
 
   return Object.assign(defaultPage, prop)
 }
+const getLayerList = (elements: Record<string, Element>): string[] => {
+  const clonedList = [...Object.values(elements)]
+  const sortedList = clonedList.sort((a, b) => a.z - b.z).map((m) => m.id)
+  return sortedList
+}
 function debounce<Params extends unknown[]>(
   func: (...args: Params) => unknown,
   timeout: number,
@@ -57,4 +62,4 @@ function throttle<T extends (...args: unknown[]) => unknown>(
     return fn(...args)
   }
 }
-export { createDefaultElement, createDefaultPage, debounce, throttle }
+export { createDefaultElement, createDefaultPage, getLayerList, debounce, throttle }

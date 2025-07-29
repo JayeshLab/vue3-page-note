@@ -31,7 +31,12 @@ app.directive('tooltip', {
       $tooltip.setAttribute('id', 'ToolTip')
       $tooltip.innerHTML = binding.value
       $tooltip.style.left = $tooltipDimension.left + $tooltipDimension.width / 2 + 'px'
-      $tooltip.style.top = $tooltipDimension.top - 30 + 'px'
+      if (binding.arg === 'down') {
+        $tooltip.style.top = $tooltipDimension.bottom + 10 + 'px'
+      } else {
+        $tooltip.style.top = $tooltipDimension.top - 30 + 'px'
+      }
+
       document.body.appendChild($tooltip)
     })
     el.addEventListener('mouseleave', function () {

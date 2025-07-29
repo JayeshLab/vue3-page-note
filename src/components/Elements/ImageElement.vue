@@ -5,6 +5,7 @@
     class="image-element"
     :style="styleObj"
     @mousedown="mousedownHandle"
+    draggable="true"
   />
 </template>
 <script setup lang="ts">

@@ -88,42 +88,50 @@ const mousemoveHandle = (e: MouseEvent) => {
   e.preventDefault()
   const dx = e.pageX - data.mX
   const dy = e.pageY - data.mY
-  if (data.type === 'right') {
-    const width = data.w + dx
-    store.updateProperties({ width: width })
-  } else if (data.type === 'left') {
-    const width = data.w - dx
-    const x = data.eX + dx
-    store.updateProperties({ width: width, x: x })
-  } else if (data.type === 'topright') {
-    store.updateProperties({
-      width: data.w + dx,
-      height: data.h - dy,
-      y: data.eY + dy,
-    })
-  } else if (data.type === 'bottomright') {
-    store.updateProperties({ width: data.w + dx, height: data.h + dy })
-  } else if (data.type === 'topleft') {
-    store.updateProperties({
-      width: data.w - dx,
-      height: data.h - dy,
-      x: data.eX + dx,
-      y: data.eY + dy,
-    })
-  } else if (data.type === 'bottomleft') {
-    store.updateProperties({
-      width: data.w - dx,
-      height: data.h + dy,
-      x: data.eX + dx,
-    })
-  } else if (data.type === 'rotation') {
-    const center_x = data.eX + data.w / 2
-    const center_y = data.eY + data.h / 2
-    const mouse_x = e.pageX
-    const mouse_y = e.pageY
-    const radians = Math.atan2(mouse_x - center_x, mouse_y - center_y)
-    const degree = radians * (180 / Math.PI) * -1 + 180
-    store.updateProperties({ origin: 'center center', rot: degree })
+  console.log('transformcontrol mousemove', dx, dy)
+  switch (data.type) {
+    case 'left':
+      const width1 = data.w - dx
+      const x = data.eX + dx
+      store.updateProperties({ width: width1, x: x })
+      break
+    case 'right':
+      const width2 = data.w + dx
+      store.updateProperties({ width: width2 })
+      break
+    case 'topright':
+      store.updateProperties({
+        width: data.w + dx,
+        height: data.h - dy,
+        y: data.eY + dy,
+      })
+      break
+    case 'bottomright':
+      store.updateProperties({ width: data.w + dx, height: data.h + dy })
+      break
+    case 'topleft':
+      store.updateProperties({
+        width: data.w - dx,
+        height: data.h - dy,
+        x: data.eX + dx,
+        y: data.eY + dy,
+      })
+      break
+    case 'bottomleft':
+      store.updateProperties({
+        width: data.w - dx,
+        height: data.h + dy,
+        x: data.eX + dx,
+      })
+      break
+    case 'rotation':
+      const center_x = data.eX + data.w / 2
+      const center_y = data.eY + data.h / 2
+      const mouse_x = e.pageX
+      const mouse_y = e.pageY
+      const radians = Math.atan2(mouse_x - center_x, mouse_y - center_y)
+      const degree = radians * (180 / Math.PI) * -1 + 180
+      store.updateProperties({ origin: 'center center', rot: degree })
   }
 }
 const removeElement = () => {
@@ -131,7 +139,7 @@ const removeElement = () => {
   store.removeElement()
 }
 const mouseupHandle = () => {
-  document.removeEventListener('mousemove', data.throttleFun, true)
+  document.removeEventListener('mousemove', mousemoveHandle, true)
   document.removeEventListener('mouseup', mouseupHandle, true)
   data.mX = 0
   data.mY = 0
@@ -150,10 +158,10 @@ const mousedownHandle = (e: { pageX: number; pageY: number }, side: string) => {
   data.h = element.value.height
   data.angle = element.value.rot
   data.type = side
-  document.addEventListener('mousemove', data.throttleFun, true)
+  document.addEventListener('mousemove', mousemoveHandle, true)
   document.addEventListener('mouseup', mouseupHandle, true)
 }
 onBeforeMount(() => {
-  data.throttleFun = throttle(mousemoveHandle as unknown as (...args: unknown[]) => unknown, 10)
+  // data.throttleFun = throttle(mousemoveHandle as unknown as (...args: unknown[]) => unknown, 10)
 })
 </script>

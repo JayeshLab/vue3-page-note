@@ -3,7 +3,7 @@ const CURRENT_PAGE_ID = 'vpn-cpi'
 
 import type { Page } from '@/types'
 import localForage from 'localforage'
-import { createDefaultPage, debounce } from './util'
+import { createDefaultPage, debounce, getLayerList } from './util'
 localForage.config({
   driver: localForage.INDEXEDDB,
   name: 'vpn',
@@ -13,6 +13,7 @@ const api = {
     const pageIds = JSON.parse((await localForage.getItem(PAGES_KEY)) ?? '[]') || []
     const currentPageId: string = (await localForage.getItem(CURRENT_PAGE_ID)) ?? '0'
     let currentPage = null
+    let layers: string[] = []
     const pages = []
     if (pageIds.length > 0) {
       for (const pageId of pageIds) {
@@ -21,6 +22,7 @@ const api = {
         pages.push(pg)
         if (pageId === currentPageId) {
           currentPage = pg
+          layers = getLayerList(pg.elements)
         }
       }
     } else {
@@ -32,8 +34,9 @@ const api = {
       await localForage.setItem(newPid, JSON.stringify(pg))
       pages.push(pg)
       currentPage = pg
+      layers = getLayerList(pg.elements)
     }
-    return { pages, currentPage }
+    return { pages, currentPage, layers }
   },
 
   createNewPage: async () => {
@@ -54,7 +57,12 @@ const api = {
   setPage: async (page: Page) => {
     await localForage.setItem(page.pid, JSON.stringify(page))
   },
-
+  deletePage: async (pageId: string) => {
+    const ids = JSON.parse((await localForage.getItem(PAGES_KEY)) ?? '[]') || []
+    const pageIds = ids.filter((e: string) => e !== pageId)
+    await localForage.setItem(PAGES_KEY, JSON.stringify(pageIds))
+    await localForage.removeItem(pageId)
+  },
   saveFonts: async (fonts: string[]) => {
     await localForage.setItem('gfonts', JSON.stringify(fonts))
   },
@@ -79,6 +87,7 @@ const api = {
 
   savePage: debounce(async (page: Page) => {
     await api.setPage(page as Page)
+    await api.setCurrentPageId(page.pid)
   }, 3000),
 }
 export default api

@@ -30,7 +30,7 @@ const editboxSelect = () => {
 }
 const pageClick = (e: MouseEvent) => {
   const el = e.target as HTMLInputElement
-  if (el.classList.contains('page')) {
+  if (el.classList.contains('page') || el.classList.contains('screen')) {
     root.value?.focus()
     range.value = null
     store.setIsOpen(['', false])
@@ -48,3 +48,9 @@ watch(formatEvent, async (val) => {
   }
 })
 </script>
+<style>
+.screen {
+  position: relative;
+  width: 100%;
+}
+</style>
