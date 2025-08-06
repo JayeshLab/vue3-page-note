@@ -10,6 +10,7 @@ export type Element = {
   content: string
   witdh: number
   origin?: string
+  lock?: boolean
 }
 export type Page = {
   pid: string

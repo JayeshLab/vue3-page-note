@@ -87,6 +87,11 @@ export const useStore = defineStore('store', () => {
     Object.assign(state, { selected: '', editable: '', selectElement: {} })
     delete state.selectedPageElements[selectedId]
   }
+  function toggleLock() {
+    if (state.selectedElement) {
+      Object.assign(state.selectedElement, { lock: !state.selectedElement.lock })
+    }
+  }
   async function selectPage(payload: string) {
     await api.setCurrentPageId(payload)
     const page = state.pages.find((page) => page.pid === payload)
@@ -308,5 +313,6 @@ export const useStore = defineStore('store', () => {
     addFont,
     setFormatEvent,
     updateLayer,
+    toggleLock,
   }
 })

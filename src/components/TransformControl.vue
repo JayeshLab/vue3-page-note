@@ -1,10 +1,21 @@
 <template>
   <div class="ctrl-container no-print">
     <div v-show="element.id === selected" class="control" :style="controlStyle">
-      <div class="rot-handle" @mousedown.stop.prevent="mousedownHandle($event, 'rotation')">
+      <div
+        class="rot-handle"
+        @mousedown.stop.prevent="mousedownHandle($event, 'rotation')"
+        title="Rotate"
+      >
         <div class="rhandle" />
       </div>
-      <div class="del-handle del" @click="removeElement" title="Delete"></div>
+      <div class="ct-bar">
+        <div
+          :class="element.lock ? 'lock-handle' : 'unlock-handle'"
+          @click="lockUnlock"
+          title="Lock"
+        ></div>
+        <div class="del-handle del" @click="removeElement" title="Delete"></div>
+      </div>
       <div
         class="ctr-handle lh"
         @mousedown.stop.prevent="mousedownHandle($event, 'left')"
@@ -138,6 +149,10 @@ const removeElement = () => {
   store.setIsOpen(['', false])
   store.removeElement()
 }
+const lockUnlock = () => {
+  store.setIsOpen(['', false])
+  store.toggleLock()
+}
 const mouseupHandle = () => {
   document.removeEventListener('mousemove', mousemoveHandle, true)
   document.removeEventListener('mouseup', mouseupHandle, true)
@@ -150,6 +165,7 @@ const mouseupHandle = () => {
   data.type = ''
 }
 const mousedownHandle = (e: { pageX: number; pageY: number }, side: string) => {
+  if (element.value.lock) return
   data.mX = e.pageX
   data.mY = e.pageY
   data.eX = element.value.x

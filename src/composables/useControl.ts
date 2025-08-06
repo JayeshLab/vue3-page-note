@@ -1,4 +1,4 @@
-import { reactive, computed } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import { useStore } from '@/stores'
 
 export function useControl(eid: string) {
@@ -9,6 +9,7 @@ export function useControl(eid: string) {
     eX: 0,
     eY: 0,
   })
+  const isDragging = ref(false)
   const item = store.getElement(eid)
 
   const selected = computed(() => {
@@ -23,6 +24,7 @@ export function useControl(eid: string) {
   const isImage = computed(() => {
     return item.type === 'Image'
   })
+
   const styleObj = computed(() => {
     const style = {
       width: `${item.width}px`,
@@ -35,13 +37,15 @@ export function useControl(eid: string) {
   })
 
   const mousemoveHandle = (e: MouseEvent) => {
-    e.stopPropagation()
     e.preventDefault()
     const dx = e.pageX - cdata.mX
     const dy = e.pageY - cdata.mY
-    console.log('mousemove', dx, dy)
-    store.moveElement({ x: cdata.eX + dx, y: cdata.eY + dy })
+    isDragging.value = true
+    requestAnimationFrame(() => {
+      store.moveElement({ x: cdata.eX + dx, y: cdata.eY + dy })
+    })
   }
+
   const parentTagActive = (elem: HTMLElement | null): boolean => {
     if (!elem || !elem.classList || elem.classList.contains('editbox')) return false
     return elem.parentNode instanceof HTMLElement ? parentTagActive(elem.parentNode) : false
@@ -51,14 +55,14 @@ export function useControl(eid: string) {
     if (selection && selection.anchorNode?.parentNode) {
       parentTagActive(selection.anchorNode.parentNode?.parentElement)
     }
-
     window.removeEventListener('mouseup', selectionHandle, true)
   }
-  const mouseupHandle = () => {
+  const mouseupHandle = (e: MouseEvent) => {
+    e.preventDefault()
     store.onPositionChange()
-    console.log('MouseUP')
     window.removeEventListener('mousemove', mousemoveHandle, true)
     window.removeEventListener('mouseup', mouseupHandle, true)
+    isDragging.value = false
   }
   const getSelectedText = () => {
     const selectedText = window.getSelection()
@@ -70,15 +74,53 @@ export function useControl(eid: string) {
     }
     return ''
   }
+  const onTouchMove = (e: TouchEvent) => {
+    console.log('Touch Move')
+    if (e.touches.length === 1) {
+      const touch = e.touches[0]
+      const dx = touch.pageX - cdata.mX
+      const dy = touch.pageY - cdata.mY
+      requestAnimationFrame(() => {
+        store.moveElement({ x: cdata.eX + dx, y: cdata.eY + dy })
+      })
+    }
+  }
+
+  const onTouchEnd = () => {
+    console.log('Touch End')
+    store.onPositionChange()
+    window.removeEventListener('touchmove', onTouchMove, true)
+    window.removeEventListener('touchend', onTouchEnd, true)
+    window.removeEventListener('touchcancel', onTouchEnd, true)
+  }
+
+  const touchStartHandle = (e: TouchEvent) => {
+    console.log('Touch Start')
+    if (item.lock) return
+    if (e.touches.length === 1) {
+      isDragging.value = true
+      const touch = e.touches[0]
+      const el = e.currentTarget as HTMLElement
+      cdata.mX = touch.pageX
+      cdata.mY = touch.pageY
+      cdata.eX = item.x
+      cdata.eY = item.y
+      store.selectElement({ id: item.id, h: el.clientHeight, w: el.clientWidth })
+      window.addEventListener('touchmove', onTouchMove, { passive: false })
+      window.addEventListener('touchend', onTouchEnd)
+      window.addEventListener('touchcancel', onTouchEnd)
+    }
+  }
   const mousedownHandle = (e: MouseEvent) => {
-    if (selected.value != item.id) {
+    if (e instanceof MouseEvent && e.button !== 0) return
+    if (editable.value != item.id) {
       const el = e.currentTarget as HTMLElement
       cdata.mX = e.pageX
       cdata.mY = e.pageY
       cdata.eX = item.x
       cdata.eY = item.y
       store.selectElement({ id: item.id, h: el.clientHeight, w: el.clientWidth })
-      console.log('mousedown')
+      if (item.lock) return
       window.addEventListener('mousemove', mousemoveHandle, true)
       window.addEventListener('mouseup', mouseupHandle, true)
     } else {
@@ -93,6 +135,7 @@ export function useControl(eid: string) {
     isContentEditable,
     isImage,
     mousedownHandle,
+    touchStartHandle,
     getSelectedText,
   }
 }

@@ -5,6 +5,7 @@
     class="editbox"
     @click.stop.prevent="onClick"
     @mousedown="mousedownHandle"
+    @touchstart="touchStartHandle"
     :style="styleObj"
     @blur="onSelect"
     @input="updateText"
@@ -20,7 +21,7 @@ const emit = defineEmits(['txtEvent'])
 const { eid } = defineProps<{ eid: string }>()
 const htext = ref('')
 const txtRef = useTemplateRef('txtRef')
-const { item, isContentEditable, styleObj, mousedownHandle } = useControl(eid)
+const { item, isContentEditable, styleObj, mousedownHandle, touchStartHandle } = useControl(eid)
 const store = useStore()
 onMounted(() => {
   htext.value = item.content
