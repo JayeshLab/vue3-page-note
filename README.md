@@ -19,13 +19,12 @@ Features:
 11. Resize, Rotate and Move both Text and Image
 12. Auto save on changes
 13. Undo and Redo changes
-
+14. Text and Image Arrangement Options
 More Feature Coming...
 
 1. Saving to Google Drive or sync to cloud indexeddb
-2. Bring Forward and Send Backward Text and Images
-3. Add embedded videos links
-4. Add tables
+2. Add embedded videos links
+3. Add tables
    and more....
 
 Build with Vue.js 3, Pinia, Typescript, GoogleFonts, localforage
