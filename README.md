@@ -20,7 +20,10 @@ Features:
 12. Auto save on changes
 13. Undo and Redo changes
 14. Text and Image Arrangement Options
+
+
 More Feature Coming...
+
 
 1. Saving to Google Drive or sync to cloud indexeddb
 2. Add embedded videos links
